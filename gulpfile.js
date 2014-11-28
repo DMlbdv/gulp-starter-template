@@ -7,6 +7,23 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var cssmin = require('gulp-minify-css');
 
+/**
+ * Handler for errors. Shows the notification in the browser and the console.
+ *
+ * @param {Object|String} e
+ * @returns {boolean}
+ */
+var browserSyncErrorHandler = function (e) {
+  var message = null;
+
+  if (typeof e === 'object') message = e.message;
+  if (typeof e === 'string') message = e;
+
+  browserSync.notify(message);
+  console.log(message);
+  return true;
+};
+
 // Browser Sync
 // ---------------------------------------------------
 gulp.task('browser-sync', ['sass', 'scripts'], function () {
@@ -28,7 +45,7 @@ gulp.task('sass', function () {
   gulp.src('_scss/main.scss')
     .pipe(sass({
       includePaths: ['scss'],
-      onError: browserSync.notify
+      onError: browserSyncErrorHandler
     }))
     .pipe(prefix(['last 3 versions', '> 1%'], { cascade: true }))
     .pipe(gulp.dest('css'))
@@ -53,6 +70,7 @@ gulp.task('scripts', function () {
   gulp
     .src(['scripts/src/**/*.js'])
     .pipe(concat('main.js'))
+    .pipe(ngAnnotate()).on('error', browserSyncErrorHandler)
     .pipe(gulp.dest('scripts/'));
 });
 

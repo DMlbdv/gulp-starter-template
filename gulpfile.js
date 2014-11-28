@@ -5,6 +5,7 @@ var sass = require('gulp-sass');
 var prefix = require('gulp-autoprefixer');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
+var ngAnnotate = require('gulp-ng-annotate');
 var cssmin = require('gulp-minify-css');
 
 /**

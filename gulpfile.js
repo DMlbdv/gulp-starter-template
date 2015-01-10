@@ -36,12 +36,17 @@ gulp.task('browser-reload', function () {
 // Takes main.scss, add the prefixes and set the compiled file in the css folder.
 gulp.task('styles', function () {
   gulp.src('_scss/main.scss')
+    // Sass with sourcemaps
     .pipe(plugins.sass({
-      includePaths: ['_scss'],
-      onError: browserSyncErrorHandler
+      onError: browserSyncErrorHandler,
+      sourceComments: 'map',
+      sourceMap: true
     }))
+    .pipe(plugins.sourcemaps.init({loadMaps: true}))
     .pipe(plugins.autoprefixer(['last 3 versions', '> 1%'], { cascade: true }))
+    .pipe(plugins.sourcemaps.write('./'))
     .pipe(gulp.dest('css'))
+    .pipe(plugins.filter('**/*.css')) // Only inject css files to the browser
     .pipe(browserSync.reload({stream: true}));
 });
 
@@ -69,7 +74,7 @@ gulp.task('scripts', function () {
   if (typeof e === 'object') message = e.message;
   if (typeof e === 'string') message = e;
 
-  plugins.browserSync.notify(message);
+  browserSync.notify(message);
   console.log(message);
   return true;
 }

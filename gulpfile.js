@@ -6,13 +6,13 @@ var plugins = require('gulp-load-plugins')({ camelize: true });
 // ---------------------------------------------------
 gulp.task('default', ['watch']);
 gulp.task('watch', ['browser-sync', 'watch-files']);
-gulp.task('build', ['sass', 'scripts']);
+gulp.task('build', ['styles', 'scripts']);
 
 
 // Watch
 // ---------------------------------------------------
 gulp.task('watch-files', function () {
-  gulp.watch('_scss/**/*', ['sass']);
+  gulp.watch('_scss/**/*', ['styles']);
   gulp.watch('scripts/src/**/*.js', ['scripts']);
   gulp.watch(['*.html', 'scripts/main.js'], ['browser-reload']);
 });
@@ -21,7 +21,7 @@ gulp.task('watch-files', function () {
 // Sub Tasks
 // -----------------------------------
 // Browser Sync
-gulp.task('browser-sync', ['sass', 'scripts'], function () {
+gulp.task('browser-sync', ['styles', 'scripts'], function () {
   browserSync({
     server: {
       baseDir: "./"
@@ -34,7 +34,7 @@ gulp.task('browser-reload', function () {
 });
 
 // Takes main.scss, add the prefixes and set the compiled file in the css folder.
-gulp.task('sass', function () {
+gulp.task('styles', function () {
   gulp.src('_scss/main.scss')
     .pipe(plugins.sass({
       includePaths: ['_scss'],

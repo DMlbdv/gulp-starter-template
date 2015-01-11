@@ -33,6 +33,7 @@ gulp.task('browser-reload', function () {
   browserSync.reload();
 });
 
+// TODO: add production version
 // Takes main.scss, add the prefixes and set the compiled file in the css folder.
 gulp.task('styles', function () {
   gulp.src('_scss/main.scss')
@@ -50,6 +51,7 @@ gulp.task('styles', function () {
     .pipe(browserSync.reload({stream: true}));
 });
 
+// TODO: Add production flag using args and production version
 // Concat the scripts in the src folder.
 gulp.task('scripts', function () {
   gulp.src(['scripts/main.js'])

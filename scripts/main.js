@@ -1,1 +1,3 @@
-console.log('Demo');
+var test = require('./test');
+
+test();

@@ -13,8 +13,8 @@ gulp.task('build', ['styles', 'scripts']);
 // ---------------------------------------------------
 gulp.task('watch-files', function () {
   gulp.watch('_scss/**/*', ['styles']);
-  gulp.watch('scripts/src/**/*.js', ['scripts']);
-  gulp.watch(['*.html', 'scripts/main.js'], ['browser-reload']);
+  gulp.watch('scripts/**/*.js', ['scripts']);
+  gulp.watch(['*.html', 'scripts/build/bundle.js'], ['browser-reload']);
 });
 
 
@@ -52,11 +52,14 @@ gulp.task('styles', function () {
 
 // Concat the scripts in the src folder.
 gulp.task('scripts', function () {
-  gulp
-    .src(['scripts/src/**/*.js'])
-    .pipe(plugins.concat('main.js'))
-    .pipe(plugins.ngAnnotate()).on('error', browserSyncErrorHandler)
-    .pipe(gulp.dest('scripts/'));
+  gulp.src(['scripts/main.js'])
+    .pipe(plugins.browserify({
+      //insertGlobals: true,
+      debug: !gulp.env.production
+    }))
+    .pipe(plugins.rename('bundle.js'))
+    //.pipe(plugins.ngAnnotate()).on('error', browserSyncErrorHandler)
+    .pipe(gulp.dest('scripts/build'));
 });
 
 

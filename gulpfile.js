@@ -1,11 +1,16 @@
 var gulp = require('gulp');
 var browserSync = require('browser-sync');
+var browserify = require('browserify');
+var watchify = require('watchify');
+var source = require('vinyl-source-stream');
 var plugins = require('gulp-load-plugins')({ camelize: true });
+
+var watch; // Set development/build mode
 
 // Main Tasks
 // ---------------------------------------------------
 gulp.task('default', ['watch']);
-gulp.task('watch', ['browser-sync', 'watch-files']);
+gulp.task('watch', ['browser-sync', 'watch-files', 'scripts']);
 gulp.task('build', ['styles', 'scripts']);
 
 
@@ -13,8 +18,7 @@ gulp.task('build', ['styles', 'scripts']);
 // ---------------------------------------------------
 gulp.task('watch-files', function () {
   gulp.watch('_scss/**/*', ['styles']);
-  gulp.watch('scripts/**/*.js', ['scripts']);
-  gulp.watch(['*.html', 'scripts/build/bundle.js'], ['browser-reload']);
+  gulp.watch(['*.html'], ['browser-reload']);
 });
 
 
@@ -39,7 +43,7 @@ gulp.task('styles', function () {
   gulp.src('_scss/main.scss')
     // Sass with sourcemaps
     .pipe(plugins.sass({
-      onError: browserSyncErrorHandler,
+      onError: handleErrors,
       sourceComments: 'map',
       sourceMap: true
     }))
@@ -51,29 +55,61 @@ gulp.task('styles', function () {
     .pipe(browserSync.reload({stream: true}));
 });
 
-// TODO: Add production flag using args and production version
 // Concat the scripts in the src folder.
 gulp.task('scripts', function () {
-  gulp.src(['scripts/main.js'])
-    .pipe(plugins.browserify({
-      //insertGlobals: true,
-      debug: !gulp.env.production
-    }))
-    .pipe(plugins.rename('bundle.js'))
-    //.pipe(plugins.ngAnnotate()).on('error', browserSyncErrorHandler)
-    .pipe(gulp.dest('scripts/build'));
+  compileScripts(true);
 });
 
 
 // Utils
 // -----------------------------------
 /**
+ * Handles scripts task for development and production.
+ *
+ * @param watch
+ * @returns {*}
+ */
+function compileScripts(watch) {
+  // Create the browserify instance
+  var bundler = browserify({
+    // THIS IS REQUIRED
+    cache: {},
+    packageCache: {},
+    fullPaths: true,
+    // DEBUG MODE: Creates the sourcemaps. TODO: set false in production
+    debug: true,
+    entries: ['./scripts/main.js'] // TODO: set this in a object with all the paths
+  });
+
+  // Use watchify if watch is true and rerun rebundle on update
+  if (watch) {
+    bundler = watchify(bundler);
+    bundler.on('update', function () {
+      rebundle();
+      plugins.util.log('Rebundle...')
+    });
+  }
+
+  function rebundle() {
+    return bundler
+      .bundle()
+      .on('error', handleErrors)
+      .pipe(source('bundle.js'))
+      .pipe(gulp.dest('./scripts/build')) // Set the destiny
+      .pipe(browserSync.reload({stream: true})); // Reload browsers!!!
+  }
+
+  return rebundle();
+}
+
+
+/**
  * Handler for errors. Shows the notification in the browser and the console.
  *
  * @param {Object|String} e
  * @returns {boolean}
  */
- function browserSyncErrorHandler(e) {
+ function handleErrors(e) {
   var message = null;
 
   if (typeof e === 'object') message = e.message;

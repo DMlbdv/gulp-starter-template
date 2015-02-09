@@ -1,6 +1,7 @@
 var gulp = require('gulp');
 var browserSync = require('browser-sync');
 var browserify = require('browserify');
+var to5ify = require('6to5ify');
 var watchify = require('watchify');
 var source = require('vinyl-source-stream');
 var plugins = require('gulp-load-plugins')({ camelize: true });
@@ -84,6 +85,8 @@ function compileScripts(watch) {
   // Use watchify if watch is true and rerun rebundle on update
   if (watch) {
     bundler = watchify(bundler);
+    bundler.transform(to5ify); // 6to5 compiler
+
     bundler.on('update', function () {
       rebundle();
       plugins.util.log('Rebundle...')

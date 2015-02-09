@@ -1,3 +1,3 @@
-var test = require('./test');
+import Car from './test';
 
-test();
+var ferrari = new Car();

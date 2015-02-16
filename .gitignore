@@ -3,3 +3,4 @@ css
 node_modules
 bower_components
 scripts/build/bundle.js
+npm-debug.log

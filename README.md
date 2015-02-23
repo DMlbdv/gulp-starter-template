@@ -27,3 +27,5 @@ $ gulp
 ```
 
 There's a lot of things to do yet, so I appreciate any help. 
+
+we are helping you ;)

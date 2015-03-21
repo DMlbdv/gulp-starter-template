@@ -54,22 +54,38 @@ gulp.task('browser-reload', function () {
   browserSync.reload();
 });
 
-// Takes main.scss, add the prefixes and set the compiled file in the css folder.
-gulp.task('styles', function () {
-  gulp.src('_scss/main.scss')
+/**
+ * Takes main.scss, add the prefixes and set the compiled file in the css folder.
+ */
+function compileStyles(develop) {
+  return gulp.src(paths.scss.src)
     // Sass with sourcemaps
     .pipe(plugins.sass({
       onError: handleErrors,
       sourceComments: 'map',
-      sourceMap: true
+      sourceMap: true,
+      includePaths: ['bower_components/bootstrap-sass/assets/stylesheets']
     }))
     .pipe(plugins.sourcemaps.init({loadMaps: true}))
-    .pipe(plugins.autoprefixer(['last 3 versions', '> 1%'], { cascade: true }))
+    .pipe(plugins.autoprefixer(['last 3 versions', '> 1%'], { cascade: true }));
+}
+
+gulp.task('styles', function () {
+  compileStyles()
     .pipe(plugins.sourcemaps.write('./'))
-    .pipe(gulp.dest('css'))
+    .pipe(gulp.dest(paths.scss.dest))
     .pipe(plugins.filter('**/*.css')) // Only inject css files to the browser
     .pipe(browserSync.reload({stream: true}));
 });
+
+gulp.task('styles:production', function () {
+  compileStyles()
+    .pipe(plugins.rename({ suffix: '.min' }))
+    .pipe(plugins.minifyCss())
+    .pipe(plugins.sourcemaps.write('./'))
+    .pipe(gulp.dest(paths.scss.dest));
+});
+
 
 // Concat the scripts in the src folder.
 gulp.task('scripts', function () {

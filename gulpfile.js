@@ -54,6 +54,8 @@ gulp.task('browser-reload', function () {
   browserSync.reload();
 });
 
+// Styles
+// -----------------------------------
 /**
  * Takes main.scss, add the prefixes and set the compiled file in the css folder.
  * @param {boolean} [develop] Activates development mode
@@ -96,56 +98,72 @@ gulp.task('styles:production', function () {
 });
 
 
-// Concat the scripts in the src folder.
-gulp.task('scripts', function () {
-  compileScripts(true);
-});
-
-
-// Utils
+// Scripts
 // -----------------------------------
 /**
  * Handles scripts task for development and production.
  *
- * @param watch
+ * @param {boolean} [watch]
  * @returns {*}
  */
 function compileScripts(watch) {
   // Create the browserify instance
   var bundler = browserify({
-    // THIS IS REQUIRED
     cache: {},
     packageCache: {},
     fullPaths: true,
-    // DEBUG MODE: Creates the sourcemaps. TODO: set false in production
     debug: true,
-    entries: ['./scripts/main.js'] // TODO: set this in a object with all the paths
+    entries: paths.js.src
   });
 
-  // Use watchify if watch is true and rerun rebundle on update
-  if (watch) {
-    bundler = watchify(bundler);
-    bundler.transform(babelify); // 6to5 compiler
+  bundler.transform(babelify); // 6to5 compiler
 
-    bundler.on('update', function () {
-      rebundle();
-      plugins.util.log('Rebundle...')
-    });
+  // For production
+  if (!watch) {
+    return bundler.bundle();
   }
+
+  // Development
+  bundler = watchify(bundler);
+
+  bundler.on('update', function () {
+    rebundle();
+    plugins.util.log('Rebundle...')
+  });
 
   function rebundle() {
     return bundler
       .bundle()
       .on('error', handleErrors)
-      .pipe(source('bundle.js'))
-      .pipe(gulp.dest('./scripts/build')) // Set the destiny
+      .pipe(source(paths.js.compiled))
+      .pipe(gulp.dest(paths.js.dest))
       .pipe(browserSync.reload({stream: true})); // Reload browsers!!!
   }
 
   return rebundle();
 }
 
+gulp.task('scripts', function () {
+  compileScripts(true);
+});
 
+gulp.task('scripts:production', function () {
+  var st = plugins.streamify;
+
+  // transform regular node stream to gulp (buffered vinyl) stream
+  return compileScripts()
+    .pipe(source(paths.js.minified))
+    .pipe(st(plugins.sourcemaps.init({loadMaps: true})))
+    // Add transformation tasks to the pipeline here.
+    .pipe(st(plugins.ngAnnotate()))
+    .pipe(st(plugins.uglify()))
+    .pipe(st(plugins.sourcemaps.write('./')))
+    .pipe(gulp.dest(paths.js.dest));
+});
+
+
+// Utils
+// -----------------------------------
 /**
  * Handler for errors. Shows the notification in the browser and the console.
  *

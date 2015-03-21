@@ -6,20 +6,36 @@ var watchify = require('watchify');
 var source = require('vinyl-source-stream');
 var plugins = require('gulp-load-plugins')({ camelize: true });
 
-var watch; // Set development/build mode
+var paths = {
+  reload: {
+    watch: ['*.html']
+  },
+
+  scss: {
+    src: ['_scss/**/[!_]*.scss'],
+    watch: '_scss/**/*',
+    dest: 'css'
+  },
+
+  js: {
+    src: ['./scripts/main.js'],
+    compiled: 'bundle.js',
+    minified: 'bundle.min.js',
+    dest: 'build'
+  }
+};
 
 // Main Tasks
 // ---------------------------------------------------
 gulp.task('default', ['watch']);
-gulp.task('watch', ['browser-sync', 'watch-files', 'scripts']);
-gulp.task('build', ['styles', 'scripts']);
-
+gulp.task('watch', ['browser-sync', 'watch-files', 'styles', 'scripts']);
+gulp.task('build', ['styles:production', 'scripts:production']);
 
 // Watch
 // ---------------------------------------------------
 gulp.task('watch-files', function () {
-  gulp.watch('_scss/**/*', ['styles']);
-  gulp.watch(['*.html'], ['browser-reload']);
+  gulp.watch(paths.scss.watch, ['styles']);
+  gulp.watch(paths.reload.watch, ['browser-reload']);
 });
 
 
@@ -38,7 +54,6 @@ gulp.task('browser-reload', function () {
   browserSync.reload();
 });
 
-// TODO: add production version
 // Takes main.scss, add the prefixes and set the compiled file in the css folder.
 gulp.task('styles', function () {
   gulp.src('_scss/main.scss')

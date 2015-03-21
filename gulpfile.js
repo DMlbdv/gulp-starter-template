@@ -56,9 +56,10 @@ gulp.task('browser-reload', function () {
 
 /**
  * Takes main.scss, add the prefixes and set the compiled file in the css folder.
+ * @param {boolean} [develop] Activates development mode
  */
 function compileStyles(develop) {
-  return gulp.src(paths.scss.src)
+  var bundle = gulp.src(paths.scss.src)
     // Sass with sourcemaps
     .pipe(plugins.sass({
       onError: handleErrors,
@@ -68,22 +69,30 @@ function compileStyles(develop) {
     }))
     .pipe(plugins.sourcemaps.init({loadMaps: true}))
     .pipe(plugins.autoprefixer(['last 3 versions', '> 1%'], { cascade: true }));
-}
 
-gulp.task('styles', function () {
-  compileStyles()
-    .pipe(plugins.sourcemaps.write('./'))
-    .pipe(gulp.dest(paths.scss.dest))
-    .pipe(plugins.filter('**/*.css')) // Only inject css files to the browser
-    .pipe(browserSync.reload({stream: true}));
-});
+  if (develop) {
+    return bundle
+      .pipe(plugins.sourcemaps.write('./'))
+      .pipe(gulp.dest(paths.scss.dest))
+      .pipe(plugins.filter('**/*.css')) // Only inject css files to the browser
+      .pipe(browserSync.reload({stream: true}));
+  }
 
-gulp.task('styles:production', function () {
-  compileStyles()
+  // Production
+  return bundle
     .pipe(plugins.rename({ suffix: '.min' }))
     .pipe(plugins.minifyCss())
     .pipe(plugins.sourcemaps.write('./'))
     .pipe(gulp.dest(paths.scss.dest));
+
+}
+
+gulp.task('styles', function () {
+  compileStyles(true);
+});
+
+gulp.task('styles:production', function () {
+  compileStyles();
 });
 
 

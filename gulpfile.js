@@ -12,8 +12,8 @@ var paths = {
   },
 
   scss: {
-    src: ['_scss/**/[!_]*.scss'],
-    watch: '_scss/**/*',
+    src: ['scss/**/[!_]*.scss'],
+    watch: 'scss/**/*',
     dest: 'css'
   },
 
